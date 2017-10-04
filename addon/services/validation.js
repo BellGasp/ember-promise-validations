@@ -1,5 +1,6 @@
 import Service from '@ember/service';
 import { get, set } from '@ember/object';
+import { A } from '@ember/array';
 import { getOwner } from '@ember/application';
 import { assert } from '@ember/debug';
 import ObjectProxy from '@ember/object/proxy';
@@ -11,7 +12,20 @@ export default Service.extend({
     let app = getOwner(this);
     return app.lookup(`validator:${validatorName}`);
   },
-
+  _setErrors(object, errors, validations) {
+    let validationErrors = get(object, 'validationErrors');
+    if (!validationErrors) {
+      validationErrors = A();
+    }
+    validations.forEach(validationName => {
+      let error = validationErrors.findBy('validation', validationName)
+      if (error) {
+        validationErrors.removeObject(error);
+      }
+    });
+    validationErrors.addObjects(errors);
+    set(object, 'validationErrors', validationErrors);
+  },
   getErrors(object, validatorName, validationsToRun) {
     if (!object) {
       assert('An object to validate must be passed.');
@@ -52,7 +66,8 @@ export default Service.extend({
       let validationErrors = validations.mapBy('error');
       return all(validationErrors).then(() => {
         let errors = validations.filter(validation => validation.error.content && true);
-        set(object, 'validationErrors', errors);
+
+        this._setErrors(object, errors, validations);
         return errors;
       });
     });
