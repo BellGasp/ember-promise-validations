@@ -1,6 +1,6 @@
 # ember-promise-validations
 
-This README outlines the details of collaborating on this Ember addon.
+Provides means to easily validate ember objects with simple DIY promise aware validators.
 
 ## Installation
 

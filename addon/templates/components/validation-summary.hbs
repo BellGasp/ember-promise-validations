@@ -1,0 +1,7 @@
+{{#each validations as |validation|}}
+  {{#if validation.error.isFulfilled}}
+    <li>
+      {{validation.error.content}}
+    </li>
+  {{/if}}
+{{/each}}
