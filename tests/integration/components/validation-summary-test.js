@@ -1,24 +1,34 @@
 import { moduleForComponent, test } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
+import EmberObject from '@ember/object';
+import { A } from '@ember/array';
+import ObjectProxy from '@ember/object/proxy';
+import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
+import { resolve } from 'rsvp';
 
 moduleForComponent('validation-summary', 'Integration | Component | validation summary', {
   integration: true
 });
 
-test('it renders', function(assert) {
-  // Set any properties with this.set('myProperty', 'value');
-  // Handle any actions with this.on('myAction', function(val) { ... });
+test('it renders validation errors', function(assert) {
+  let promiseAwareObject = ObjectProxy.extend(PromiseProxyMixin);
 
-  this.render(hbs`{{validation-summary}}`);
+  this.set('object', EmberObject.create({
+    validationErrors: A([{
+      validation: 'test',
+      error: promiseAwareObject.create({
+        promise: resolve('Some error message')
+      })
+    }, {
+      validation: 'otherTest',
+      error: promiseAwareObject.create({
+        promise: resolve('Some other error message')
+      })
+    }])
+  }));
 
-  assert.equal(this.$().text().trim(), '');
+  this.render(hbs`{{validation-summary validations=object.validationErrors}}`);
 
-  // Template block usage:
-  this.render(hbs`
-    {{#validation-summary}}
-      template block text
-    {{/validation-summary}}
-  `);
-
-  assert.equal(this.$().text().trim(), 'template block text');
+  assert.equal(this.$('li:eq(0)').text().trim(), 'Some error message');
+  assert.equal(this.$('li:eq(1)').text().trim(), 'Some other error message');
 });

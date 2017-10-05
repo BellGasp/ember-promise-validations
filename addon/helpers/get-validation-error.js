@@ -23,13 +23,16 @@ export default Helper.extend({
 
     if (!errors || !errors.length)
     {
-      return false;
+      return null;
     }
 
     if (!validation) {
-      return errors.length > 0;
+      return errors;
     }
-
-    return errors.mapBy('validation').includes(validation);
+    let error = errors.findBy('validation', validation);
+    if (error) {
+      return error;
+    }
+    return null;
   }
 });

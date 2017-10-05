@@ -17,7 +17,7 @@ export default Service.extend({
     if (!validationErrors) {
       validationErrors = A();
     }
-    validations.forEach(validationName => {
+    validations.forEach(([validationName]) => {
       let error = validationErrors.findBy('validation', validationName)
       if (error) {
         validationErrors.removeObject(error);
@@ -45,7 +45,7 @@ export default Service.extend({
       ? possibleValidations.filter(([validationName]) => validationsToRun.includes(validationName))
       : possibleValidations;
 
-    let promises = validations.map(([validationName, validationFn]) => {
+    let validationErrors = validations.map(([validationName, validationFn]) => {
       if (typeof validationFn === 'function') {
         let value = get(object, validationName);
 
@@ -53,23 +53,22 @@ export default Service.extend({
 
         let error = resolve(validationFn.call(validator, value, object));
 
-        return resolve({
+        return {
           validation: validationName,
           error: promiseAwareObject.create({
             promise: error
           })
-        });
+        };
       }
     });
+    let allValidation = validationErrors.map(ve => get(ve, 'error'));
+    return all(allValidation).then(() => {
+      let failingValidations = validationErrors.filter(validation =>
+        validation.error.content && true);
 
-    return all(promises).then(validations => {
-      let validationErrors = validations.mapBy('error');
-      return all(validationErrors).then(() => {
-        let errors = validations.filter(validation => validation.error.content && true);
-
-        this._setErrors(object, errors, validations);
-        return errors;
-      });
+      this._setErrors(object, failingValidations, validations);
+      return failingValidations;
     });
+
   }
 });
