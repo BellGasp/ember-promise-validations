@@ -5,6 +5,7 @@ import { A } from '@ember/array';
 import ObjectProxy from '@ember/object/proxy';
 import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import { resolve } from 'rsvp';
+import wait from 'ember-test-helpers/wait';
 
 moduleForComponent('validation-summary', 'Integration | Component | validation summary', {
   integration: true
@@ -17,18 +18,23 @@ test('it renders validation errors', function(assert) {
     validationErrors: A([{
       validation: 'test',
       error: promiseAwareObject.create({
-        promise: resolve('Some error message')
+        isFulfilled: true,
+        promise: resolve('Some error message'),
+        content: 'Some error message'
       })
     }, {
       validation: 'otherTest',
       error: promiseAwareObject.create({
-        promise: resolve('Some other error message')
+        isFulfilled: true,
+        promise: resolve('Some other error message'),
+        content: 'Some other error message'
       })
     }])
   }));
 
   this.render(hbs`{{validation-summary validations=object.validationErrors}}`);
-
-  assert.equal(this.$('li:eq(0)').text().trim(), 'Some error message');
-  assert.equal(this.$('li:eq(1)').text().trim(), 'Some other error message');
+  wait().then(() => {
+    assert.equal(this.$('li:eq(0)').text().trim(), 'Some error message');
+    assert.equal(this.$('li:eq(1)').text().trim(), 'Some other error message');
+  });
 });
