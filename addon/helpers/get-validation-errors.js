@@ -1,24 +1,9 @@
 import Helper from '@ember/component/helper';
 import { A } from '@ember/array';
 import { isArray } from '@ember/array';
+import HelperObserver from '../mixins/helper-observer';
 
-export default Helper.extend({
-  observers: A(),
-  isObserverSet(model) {
-    return this.get('observers').includes(model);
-  },
-  addObserver(model) {
-    if (!this.isObserverSet(model)) {
-      model.addObserver('validationErrors.[]', this, this.observeErrors);
-      this.get('observers').addObject(model);
-    }
-  },
-  removeObserver(model) {
-    if (this.isObserverSet(model)) {
-      model.removeObserver('validationErrors.[]', this, this.observeErrors);
-      this.get('observers').removeObject(model);
-    }
-  },
+export default Helper.extend(HelperObserver, {
   flattenArray(array) {
     let newArray = A();
     array.forEach(p => {
@@ -30,16 +15,6 @@ export default Helper.extend({
     });
     return newArray;
   },
-  observeErrors() {
-    this.recompute();
-  },
-  willDestroy(){
-    this._super(...arguments);
-    let models = this.get('models');
-    models.forEach(model => {
-      this.removeObserver(model);
-    })
-  },
   compute(params) {
     let validationErrors = [];
 
@@ -47,7 +22,7 @@ export default Helper.extend({
 
     this.set('models', models);
     models.forEach(model => {
-      this.addObserver(model);
+      this.addObserver(model, 'validationErrors.[]');
       let errors = model.get('validationErrors');
 
       if (errors && errors.length)
