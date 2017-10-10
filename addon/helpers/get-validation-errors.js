@@ -7,9 +7,9 @@ export default Helper.extend(HelperObserver, {
   flattenArray(array) {
     let newArray = A();
     array.forEach(p => {
-      if (isArray(p)) {
+      if (p && isArray(p)) {
         newArray = newArray.concat(...this.flattenArray(p));
-      } else {
+      } else if (p) {
         newArray = newArray.concat(p);
       }
     });
