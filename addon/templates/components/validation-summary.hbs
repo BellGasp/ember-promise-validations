@@ -1,7 +1,11 @@
 {{#each validations as |validation|}}
   {{#if validation.error.isFulfilled}}
     <li>
-      {{validation.error.content}}
+      {{#if hasBlock}}
+        {{yield validation.error.content}}
+      {{else}}
+        {{validation.error.content}}
+      {{/if}}
     </li>
   {{/if}}
 {{/each}}
