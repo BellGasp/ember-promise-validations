@@ -78,7 +78,7 @@ export default EmberObject.extend({
 #### Validation
 The validation service is used to validate an object against a validator and can be passed an array of validations to execute if not all of them need to be executed.
 
-The only method of the service is the `getErrors(object, validatorName, validations)` method.
+The only method of the service is the `getErrors(object, validatorName, ...validations)` method.
 This method validates the object against the validator, and executes only the validations passed in the array 'validations'. If the parameter isn't passed, it'll execute every validation of the validator.
 This returns a promise, so if it's necessary to wait for the result, for example to know if it's safe to save the model, you need to wait for it.
 For Example:
