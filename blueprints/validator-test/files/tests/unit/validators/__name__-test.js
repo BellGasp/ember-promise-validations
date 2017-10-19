@@ -1,6 +1,6 @@
 import { moduleFor, test } from 'ember-qunit';
 
-moduleFor('validator:<%= dasherizedModuleName %>', 'Unit | Service | <%= classifiedModuleName %>', {
+moduleFor('validator:<%= dasherizedModuleName %>', 'Unit | Validator | <%= classifiedModuleName %>', {
   // Specify the other units that are required for this test.
   needs: []
 });
