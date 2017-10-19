@@ -76,7 +76,7 @@ test('It can get errors', async function(assert) {
   let service = this.subject();
 
   let errors = await service.getErrors(object, 'test');
-  
+
   assert.equal(errors.length, 2);
   assert.equal(object.get('validationErrors').findBy('validation', 'testProperty').error.content,
     'some-value');
@@ -84,4 +84,57 @@ test('It can get errors', async function(assert) {
     'testFnError');
   assert.equal(object.get('validationErrors').findBy('validation', 'testFn2'),
     undefined);
+});
+
+test('It can get specified errors', async function(assert) {
+  let validator = EmberObject.extend({
+    validations: {
+      testProperty(value) {
+        return value;
+      },
+      testProperty2(value) {
+        return `test-${value}`;
+      },
+      testFn() {
+        return 'testFnError';
+      },
+      testFn2() {
+        return false;
+      }
+    }
+  });
+
+  this.registry.register('validator:test', validator);
+
+  let promiseAwareObject = ObjectProxy.extend(PromiseProxyMixin);
+  let object = EmberObject.create({
+    testProperty: 'some-value',
+    testProperty2: 'some-other-value',
+    validationErrors: A([{
+      validation: 'testFn2',
+      error: promiseAwareObject.create({
+        content: 'Some error message'
+      })
+    }])
+  });
+
+  let service = this.subject();
+
+  let errors = await service.getErrors(object, 'test', 'testProperty', 'testProperty2');
+
+  assert.equal(errors.length, 2);
+
+  assert.equal(errors.findBy('validation', 'testProperty'),
+    object.get('validationErrors').findBy('validation', 'testProperty'));
+  assert.equal(errors.findBy('validation', 'testProperty2'),
+    object.get('validationErrors').findBy('validation', 'testProperty2'));
+
+  assert.equal(object.get('validationErrors').findBy('validation', 'testProperty').error.content,
+    'some-value');
+  assert.equal(object.get('validationErrors').findBy('validation', 'testProperty2').error.content,
+    'test-some-other-value');
+  assert.equal(object.get('validationErrors').findBy('validation', 'testFn'),
+    undefined);
+  assert.equal(object.get('validationErrors').findBy('validation', 'testFn2').error.content,
+    'Some error message');
 });

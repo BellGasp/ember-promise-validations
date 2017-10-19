@@ -6,6 +6,7 @@ import { assert } from '@ember/debug';
 import ObjectProxy from '@ember/object/proxy';
 import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import { resolve, all } from 'rsvp';
+import { isEmpty } from '@ember/utils';
 
 export default Service.extend({
   _getValidator(validatorName) {
@@ -26,7 +27,7 @@ export default Service.extend({
     validationErrors.addObjects(errors);
     set(object, 'validationErrors', validationErrors);
   },
-  getErrors(object, validatorName, validationsToRun) {
+  getErrors(object, validatorName, ...validationsToRun) {
     if (!object) {
       assert('An object to validate must be passed.');
     }
@@ -41,7 +42,7 @@ export default Service.extend({
     }
     let possibleValidations = Object.entries(validator.validations);
 
-    let validations = validationsToRun
+    let validations = !isEmpty(validationsToRun)
       ? possibleValidations.filter(([validationName]) => validationsToRun.includes(validationName))
       : possibleValidations;
 
@@ -63,8 +64,8 @@ export default Service.extend({
     });
     let allValidation = validationErrors.map(ve => get(ve, 'error'));
     return all(allValidation).then(() => {
-      let failingValidations = validationErrors.filter(validation =>
-        validation.error.content && true);
+      let failingValidations = A(validationErrors.filter(validation =>
+        validation.error.content && true));
 
       this._setErrors(object, failingValidations, validations);
       return failingValidations;
